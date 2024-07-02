@@ -538,8 +538,8 @@ public final class PropertiesUtil {
         }
 
         private void addPropertySource(final PropertySource propertySource) {
+            sourceWriteLock.lock();
             try {
-                sourceWriteLock.lock();
                 if (!sources.contains(propertySource)) {
                     sources.add(propertySource);
                     sources.sort(Comparator.INSTANCE);
@@ -550,8 +550,8 @@ public final class PropertiesUtil {
         }
 
         private void removePropertySource(final PropertySource propertySource) {
+            sourceWriteLock.lock();
             try {
-                sourceWriteLock.lock();
                 sources.remove(propertySource);
             } finally {
                 sourceWriteLock.unlock();
@@ -561,8 +561,8 @@ public final class PropertiesUtil {
         private void reload() {
             literal.clear();
             tokenized.clear();
+            sourceWriteLock.lock();
             try {
-                sourceWriteLock.lock();
                 // 1. Collects all property keys from enumerable sources.
                 final Set<String> keys = new HashSet<>();
                 sources.stream().map(PropertySource::getPropertyNames).forEach(keys::addAll);
@@ -598,8 +598,8 @@ public final class PropertiesUtil {
             }
             final List<CharSequence> tokens = PropertySource.Util.tokenize(key);
             final boolean hasTokens = !tokens.isEmpty();
+            sourceReadLock.lock();
             try {
-                sourceReadLock.lock();
                 for (final PropertySource source : sources) {
                     if (hasTokens) {
                         final String normalKey = Objects.toString(source.getNormalForm(tokens), null);
@@ -637,8 +637,8 @@ public final class PropertiesUtil {
 
         private boolean containsKey(final String key) {
             final List<CharSequence> tokens = PropertySource.Util.tokenize(key);
+            sourceReadLock.lock();
             try {
-                sourceReadLock.lock();
                 return literal.containsKey(key)
                         || tokenized.containsKey(tokens)
                         || sources.stream().anyMatch(s -> {
